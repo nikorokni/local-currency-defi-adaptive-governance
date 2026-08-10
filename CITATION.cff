@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use this working paper or replication package, please cite it as below."
+title: "Adaptive Governance, Oracle Latency, and Automated Risk Engine Design for Local-Currency DeFi Lending Protocols"
+type: software
+version: 1.0.0
+date-released: 2026-08-10
+authors:
+  - family-names: Rokni Lamouki
+    given-names: Niko
+    email: nrokni@uel.ac.uk
+  - family-names: Soofiyan
+    given-names: Salma
+  - family-names: Karami
+    given-names: Amin
+repository-code: "https://github.com/nikorokni/local-currency-defi-adaptive-governance"
+license: MIT
+keywords:
+  - decentralized finance
+  - local-currency stablecoins
+  - adaptive governance
+  - price oracles
+  - circuit breakers
+  - protocol risk
+  - Monte Carlo simulation
+

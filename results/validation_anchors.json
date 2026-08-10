@@ -1,0 +1,16 @@
+{
+  "seed": 20260810,
+  "main_paths_per_currency_architecture": 6000,
+  "historical_windows_per_currency": 39,
+  "step_hours": 6,
+  "horizon_days": 120,
+  "ars_static_bad_debt_probability": 0.154,
+  "ars_breaker_bad_debt_probability": 0.0028333333333333335,
+  "try_static_severe_depeg_probability": 1.0,
+  "try_breaker_severe_depeg_probability": 0.25,
+  "ars_breaker_pause_share": 0.27978993055555557,
+  "try_breaker_pause_share": 0.2913690972222222,
+  "raw_ars_sha256": "1dacf0b03e50660e0bbd819e3b73f6783576517a8d0cf9ac2559dbb92d0f455d",
+  "raw_try_sha256": "51d90a2eb45a989dcc078e04dacfcb06637026e90a3ead8d8290e8a61a32aad4",
+  "processed_panel_sha256": "5615ff2076e65cea9fe46bf8752ae28210fd235c8b7817663be24e20500914ce"
+}

@@ -1,0 +1,7 @@
+check,passed,detail
+main_rows,True,found 8 architecture-currency rows
+historical_windows,True,path counts [np.int64(39)]
+multi_oracle_improves_error,True,adaptive multi-oracle MAE is below static single-oracle MAE
+adaptive_reduces_bad_debt,True,breaker architecture has lower bad-debt probability in both currencies
+breaker_weakly_reduces_depeg,True,breaker does not increase severe-depeg probability
+finite_outputs,True,all numeric outputs are finite
