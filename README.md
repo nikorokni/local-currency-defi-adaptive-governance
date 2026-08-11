@@ -1,76 +1,118 @@
-# Adaptive Governance and Oracle Architecture for Local-Currency DeFi
+<p align="center">
+  <img src="assets/series-banner.svg" alt="Adaptive Governance and Oracle-Aware Risk — Local-Currency DeFi Research, Paper 4 of 4" width="100%">
+</p>
 
-Replication package for the working paper:
+<h1 align="center">Adaptive Governance, Oracle Latency, and Automated Risk Engine Design</h1>
 
-> Niko Rokni Lamouki, Salma Soofiyan, and Amin Karami (2026), “Adaptive Governance, Oracle Latency, and Automated Risk Engine Design for Local-Currency DeFi Lending Protocols.”
+<p align="center">
+  <strong>For Local-Currency DeFi Lending Protocols</strong><br>
+  Niko Rokni Lamouki · Salma Soofiyan · Amin Karami
+</p>
 
-This is the fourth paper in a research sequence on hypothetical local-currency DeFi lending. It replaces three simplifying assumptions in the companion studies—error-free prices, instantaneous parameter changes, and unlimited reaction capacity—with a multi-source oracle, delayed DAO benchmark, bounded automated controller, and circuit breaker.
+<p align="center">
+  <img src="https://img.shields.io/badge/Research_Paper-04%2F04-c084fc?style=flat-square" alt="Paper 4 of 4">
+  <img src="https://img.shields.io/badge/Oracle-3_Source_Median-4ade80?style=flat-square" alt="Three-source median oracle">
+  <img src="https://img.shields.io/badge/Simulation-6%2C000_paths-f59e0b?style=flat-square" alt="6,000 paths">
+  <img src="https://img.shields.io/badge/Clock-6h_Risk_Updates-334155?style=flat-square" alt="Six-hour risk updates">
+</p>
 
-## Research question
+<p align="center">
+  <a href="manuscript/main.pdf"><strong>Read the paper</strong></a> ·
+  <a href="#reproduce"><strong>Reproduce the analysis</strong></a> ·
+  <a href="#research-series"><strong>Explore the series</strong></a>
+</p>
 
-Can an automated risk engine adjust the borrowing rate, debt ceiling, and liquidation ratio quickly enough to contain oracle error, joint FX/collateral shocks, and DEX sell pressure without eliminating useful credit access?
+---
 
-## Design
+## At a glance
 
-- Official FX, DEX execution, and independent-reference price domains.
-- A three-source log-median oracle and an intentionally fragile single-source benchmark.
-- Six-hour risk updates using EWMA volatility, DEX basis, source disagreement, and utilisation.
-- Rate-limited controls for the borrowing rate, debt ceiling, and liquidation ratio.
-- A circuit breaker that pauses new draws but preserves repayment and collateral top-ups.
-- A 48-hour delayed-DAO benchmark and governance-delay sensitivity from 0 to 72 hours.
-- Opportunistic borrowing during one-source collateral manipulation episodes.
-- 6,000 four-month moving-block bootstrap paths per currency and architecture, 39 realised rolling windows per currency, deterministic seed `20260810`, and six-hour intramonth stress timing.
+| Research question | Empirical base | Main contribution |
+|---|---|---|
+| Can an automated risk engine react to oracle error, joint shocks, and DEX pressure quickly enough to protect solvency without eliminating useful credit? | Official FX, DEX and reference-price signals, 39 realised windows, and 6,000 four-month bootstrap paths per currency and architecture | A latency-aware comparison of static governance, delayed DAO action, bounded automation, multi-source oracles, and circuit breakers |
 
-The model is a transparent counterfactual design experiment. It is not a forecast, audited smart contract, policy recommendation, or evidence from a deployed ARS- or TRY-denominated lending protocol.
+> [!IMPORTANT]
+> This is a counterfactual protocol-design experiment. It tests simulated governance architectures under stated assumptions; it is not an audit, a deployment recommendation, or evidence from a live ARS- or TRY-denominated lending protocol.
 
-## Main results
+## Control architecture
 
-- In the main bootstrap experiment, the static single-oracle architecture produces bad debt in 15.4% of ARS paths and 14.0% of TRY paths. The adaptive multi-oracle architecture with a breaker reduces those probabilities to 0.28% and 0.20%.
-- A severe DEX discount above 10% occurs in every static and 48-hour delayed-DAO path. The full architecture reduces the rate to 0% for ARS and 25% for TRY. Residual TRY failures arise when background conversion pressure alone exceeds the modelled arbitrage capacity.
-- The protection is not free. The breaker is active for 28.0% of ARS intervals and 29.1% of TRY intervals, and mean cumulative credit issuance falls from about 0.70 to 0.20–0.22 initial-ceiling units.
-- Increasing the one-source attack magnitude from zero to twice the baseline raises static bad-debt probability from 14.4% to 20.4%; the multi-oracle-breaker result remains 0.33% in the pooled sensitivity sample.
-- Execution delay is decisive. At 24 hours, severe-depeg probability reaches 100% for ARS and 86% for TRY in the no-breaker controller; by 48 hours it is 100% for both.
+```mermaid
+flowchart TD
+  A[Official FX + DEX + reference price] --> B[Multi-source log-median oracle]
+  B --> C[6-hour risk engine]
+  C --> D[Borrow rate]
+  C --> E[Debt ceiling]
+  C --> F[Liquidation ratio]
+  C --> G{Circuit breaker}
+  G -->|Stress| H[Pause new draws]
+  G -->|Normal| I[Continue issuance]
+```
+
+- **Oracle comparison:** three-source log-median architecture versus a fragile single source.
+- **Risk state:** EWMA volatility, DEX basis, source disagreement, and utilisation.
+- **Bounded control:** rate-limited borrowing rate, debt ceiling, and liquidation-ratio changes.
+- **Circuit breaker:** pauses new draws while retaining repayment and collateral top-up paths.
+- **Governance latency:** 48-hour DAO baseline with a 0–72 hour delay sensitivity grid.
+- **Adversarial demand:** opportunistic borrowing attacks during periods of stale or distorted prices.
+- **Evaluation:** 6,000 four-month moving-block paths per currency and architecture, 39 realised windows, seed `20260810`, and a six-hour simulation clock.
+
+## Key findings
+
+| Outcome | ARS | TRY |
+|---|---:|---:|
+| Static architecture — paths with bad debt | 15.4% | 14.0% |
+| Full architecture — paths with bad debt | 0.28% | 0.20% |
+| Severe DEX discount under static / 48h DAO | 100% | 100% |
+| Severe DEX discount under full architecture | 0% | 25% |
+| Breaker active share | 28.0% | 29.1% |
+| Issuance retained under full architecture | 0.20–0.22 of baseline | 0.20–0.22 of baseline |
+
+Attack intensity exposes the value of layered controls: raising attack magnitude from 0 to 2× increases the static system's bad-debt incidence from 14.4% to 20.4%, while the multi-source-oracle plus breaker architecture remains at 0.33% in the pooled result.
+
+The trade-off is explicit: protection improves sharply, but issuance falls from roughly 0.70 under the static baseline to 0.20–0.22 under the full architecture.
 
 ## Repository map
 
 | Path | Contents |
 |---|---|
-| `manuscript/main.tex` | Complete LaTeX manuscript |
-| `manuscript/main.pdf` | Compiled paper |
-| `analysis/model.py` | Market-path, oracle, lending, controller, and breaker model |
-| `analysis/run_analysis.py` | Main analysis, robustness, tables, figures, and validation |
-| `data/raw_fx/` | Original FRED/OECD FX snapshots |
-| `data/processed/` | Common 43-month joint FX/crypto panel |
-| `results/` | Machine-readable main, historical, robustness, and validation outputs |
-| `tables/` | Six machine-generated LaTeX tables |
-| `figures/` | Seven publication figures |
-| `tests/` | Determinism, accounting, oracle, and comparative-statics tests |
-| `documentation/` | Source provenance, assumptions, and result validation |
+| [`analysis/`](analysis/) | Oracle, controller, governance, attack, and path simulations |
+| [`data/`](data/) | Included market inputs and prepared histories |
+| [`results/`](results/) | Architecture and sensitivity outputs |
+| [`tables/`](tables/) · [`figures/`](figures/) | Publication exhibits |
+| [`tests/`](tests/) | Automated checks for the risk engine and workflow |
+| [`manuscript/`](manuscript/) | LaTeX source and compiled paper |
+| [`docs/`](docs/) | Data and replication documentation |
 
 ## Reproduce
 
-On a system with Python 3.11+, `pdflatex`, and Ghostscript:
+Requirements: **Python 3.11+**, `pdflatex`, and Ghostscript.
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ./run_all.sh
 ```
 
-The script regenerates every result, table, and figure; validates the PNG files; compiles the Python sources; runs the unit tests; compiles LaTeX twice; and rejects unresolved citations or references.
+The workflow regenerates the simulations, sensitivity tables, figures, and compiled manuscript.
 
-## Data provenance
+## Data window
 
-The common calibration panel covers January 2020 through July 2023. ARS and TRY exchange rates are OECD Main Economic Indicators monthly series distributed by FRED; ETH/USD is the Coin Metrics community series inherited from the companion solvency package. Source URLs, checksums, and transformation notes are in [`documentation/SOURCES.md`](documentation/SOURCES.md).
+- **Period:** January 2020 through July 2023.
+- **FX:** official ARS and TRY series accessed through FRED/OECD.
+- **Collateral:** Coin Metrics ETH/BTC histories inherited from the solvency calibration.
 
-## Companion papers
+## Research series
 
-1. [Inflation-Driven Debt Erosion in Local-Currency DeFi Lending](https://github.com/nikorokni/inflation-driven-debt-erosion-defi)
-2. [From Debt Erosion to Protocol Solvency](https://github.com/nikorokni/local-currency-defi-solvency-stress-test)
-3. [From Debt Erosion to Peg Stability](https://github.com/nikorokni/local-currency-defi-peg-stability)
+| Paper | Focus | Repository |
+|---:|---|---|
+| 01 | Inflation-driven debt erosion | [inflation-driven-debt-erosion-defi](https://github.com/nikorokni/inflation-driven-debt-erosion-defi) |
+| 02 | Joint FX and collateral shocks → protocol solvency | [local-currency-defi-solvency-stress-test](https://github.com/nikorokni/local-currency-defi-solvency-stress-test) |
+| 03 | Liquidity and arbitrage constraints → peg stability | [local-currency-defi-peg-stability](https://github.com/nikorokni/local-currency-defi-peg-stability) |
+| **04** | **Oracle latency and automated controls → adaptive governance** | **You are here** |
 
-## Licence
+## Citation
 
-Original code and text are released under the MIT License. Third-party data and the Springer Nature LaTeX class retain their original terms and provenance.
+> Rokni Lamouki, N., Soofiyan, S., & Karami, A. (2026). *Adaptive Governance, Oracle Latency, and Automated Risk Engine Design for Local-Currency DeFi Lending Protocols.*
+
+## License
+
+Analysis code and original repository text are released under the MIT License. Third-party data remain subject to their original source terms.
 
