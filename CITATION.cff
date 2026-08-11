@@ -10,8 +10,6 @@ authors:
     email: nrokni@uel.ac.uk
   - family-names: Soofiyan
     given-names: Salma
-  - family-names: Karami
-    given-names: Amin
 repository-code: "https://github.com/nikorokni/local-currency-defi-adaptive-governance"
 license: MIT
 keywords:
@@ -22,4 +20,3 @@ keywords:
   - circuit breakers
   - protocol risk
   - Monte Carlo simulation
-

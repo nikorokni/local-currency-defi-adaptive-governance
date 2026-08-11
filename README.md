@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>For Local-Currency DeFi Lending Protocols</strong><br>
-  Niko Rokni Lamouki · Salma Soofiyan · Amin Karami
+  Niko Rokni Lamouki · Salma Soofiyan
 </p>
 
 <p align="center">
@@ -110,9 +110,8 @@ The workflow regenerates the simulations, sensitivity tables, figures, and compi
 
 ## Citation
 
-> Rokni Lamouki, N., Soofiyan, S., & Karami, A. (2026). *Adaptive Governance, Oracle Latency, and Automated Risk Engine Design for Local-Currency DeFi Lending Protocols.*
+> Rokni Lamouki, N., & Soofiyan, S. (2026). *Adaptive Governance, Oracle Latency, and Automated Risk Engine Design for Local-Currency DeFi Lending Protocols.*
 
 ## License
 
 Analysis code and original repository text are released under the MIT License. Third-party data remain subject to their original source terms.
-
