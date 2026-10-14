@@ -19,6 +19,7 @@
 <p align="center">
   <a href="manuscript/main.pdf"><strong>Read the paper</strong></a> ·
   <a href="#reproduce"><strong>Reproduce the analysis</strong></a> ·
+  <a href="#read-only-shadow-mode"><strong>Run shadow mode</strong></a> ·
   <a href="#research-series"><strong>Explore the series</strong></a>
 </p>
 
@@ -80,7 +81,7 @@ The trade-off is explicit: protection improves sharply, but issuance falls from 
 | [`tables/`](tables/) · [`figures/`](figures/) | Publication exhibits |
 | [`tests/`](tests/) | Automated checks for the risk engine and workflow |
 | [`manuscript/`](manuscript/) | LaTeX source and compiled paper |
-| [`docs/`](docs/) | Data and replication documentation |
+| [`documentation/`](documentation/) | Data, replication, and shadow-mode documentation |
 
 ## Reproduce
 
@@ -92,6 +93,25 @@ python -m pip install -r requirements.txt
 ```
 
 The workflow regenerates the simulations, sensitivity tables, figures, and compiled manuscript.
+
+## Read-only shadow mode
+
+The repository includes an off-chain observer that replays recorded snapshots or
+polls a JSON endpoint and logs the controller's recommended borrowing rate, debt
+ceiling, liquidation ratio, and draw-pause state. It shares the exact controller
+functions used by the simulation and has no signer, private-key, transaction
+construction, or transaction-broadcast path.
+
+Run the included eight-observation replay:
+
+```bash
+python3 analysis/run_shadow.py --config config/shadow.replay.example.json
+```
+
+See [`documentation/SHADOW_MODE.md`](documentation/SHADOW_MODE.md) for the input
+schema, block diagram, equations, HTTP mapping, audit-log fields, and safety
+boundary. The generated recommendations are research outputs, not production
+actions.
 
 ## Data window
 

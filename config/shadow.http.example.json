@@ -1,0 +1,25 @@
+{
+  "mode": "once",
+  "source": {
+    "type": "http_json",
+    "url": "https://observer.example.invalid/v1/protocol-snapshot",
+    "timeout_seconds": 10,
+    "field_map": {
+      "timestamp": "snapshot.timestamp",
+      "official_lcu_usd": "prices.official.lcu_usd",
+      "official_eth_usd": "prices.official.eth_usd",
+      "dex_lcu_usd": "prices.dex.lcu_usd",
+      "dex_eth_usd": "prices.dex.eth_usd",
+      "reference_lcu_usd": "prices.reference.lcu_usd",
+      "reference_eth_usd": "prices.reference.eth_usd",
+      "dex_basis": "protocol.dex_basis",
+      "debt_value_usd": "protocol.debt_value_usd",
+      "oracle_age_hours": "protocol.oracle_age_hours"
+    }
+  },
+  "output": {
+    "jsonl_path": "../results/shadow_live_decisions.jsonl"
+  },
+  "poll_interval_seconds": 21600,
+  "breaker_cooldown_steps": 4
+}

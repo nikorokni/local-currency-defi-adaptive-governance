@@ -12,6 +12,15 @@ from dataclasses import dataclass, replace
 import numpy as np
 import pandas as pd
 
+from risk_engine import (
+    RiskEngineConfig,
+    breaker_trigger,
+    compute_risk_score,
+    compute_targets,
+    rate_limited_update,
+    update_ewma_variance,
+)
+
 
 @dataclass(frozen=True)
 class Architecture:
@@ -342,6 +351,17 @@ def simulate_protocol(
     """Simulate lending, liquidations, DEX pressure, and adaptive controls."""
 
     cfg = config or SimulationConfig()
+    controller_cfg = RiskEngineConfig(
+        initial_rate=cfg.initial_rate,
+        initial_debt_ceiling=cfg.initial_debt_ceiling,
+        initial_liquidation_ratio=cfg.initial_liquidation_ratio,
+        max_rate=cfg.max_rate,
+        min_ceiling=cfg.min_ceiling,
+        max_liquidation_ratio=cfg.max_liquidation_ratio,
+        breaker_basis=cfg.breaker_basis,
+        breaker_disagreement=cfg.breaker_disagreement,
+        breaker_volatility=cfg.breaker_volatility,
+    )
     if market.n_steps != cfg.n_steps:
         raise ValueError("market path length and configuration do not agree")
     if official_gap_multiplier < 0 or attack_scale < 0:
@@ -412,41 +432,24 @@ def simulate_protocol(
         disagreement_sum += disagreement
 
         ratio_return = market.eth_step_log_return[:, step] - market.fx_step_log_return[:, step]
-        ewma_variance = 0.92 * ewma_variance + 0.08 * ratio_return**2
+        ewma_variance = update_ewma_variance(ewma_variance, ratio_return)
         observed_volatility = np.sqrt(ewma_variance)
 
         debt_value_oracle = (debt_units * lcu_hat[:, None]).sum(axis=1)
         utilization = debt_value_oracle / np.maximum(ceiling, 1e-15)
-        risk_score = np.clip(
-            4.0 * observed_volatility
-            + 3.2 * dex_basis
-            + 1.8 * disagreement
-            + 0.9 * np.maximum(utilization - 0.72, 0.0),
-            0.0,
-            1.0,
+        risk_score = compute_risk_score(
+            observed_volatility, dex_basis, disagreement, utilization
         )
-
-        target_rate = np.clip(
-            cfg.initial_rate + 0.90 * risk_score + 0.35 * np.maximum(utilization - 0.75, 0.0),
-            0.04,
-            cfg.max_rate,
-        )
-        target_ceiling = np.clip(
-            cfg.initial_debt_ceiling * np.exp(-1.75 * risk_score),
-            cfg.min_ceiling,
-            cfg.initial_debt_ceiling,
-        )
-        target_liquidation = np.clip(
-            cfg.initial_liquidation_ratio + 0.70 * risk_score,
-            cfg.initial_liquidation_ratio,
-            cfg.max_liquidation_ratio,
+        target_rate, target_ceiling, target_liquidation = compute_targets(
+            risk_score, utilization, controller_cfg
         )
 
         if architecture.adaptive:
-            proposed_rate = rate + np.clip(target_rate - rate, -0.02, 0.05)
-            proposed_ceiling = ceiling + np.clip(target_ceiling - ceiling, -0.05, 0.02)
-            proposed_liquidation = liquidation_ratio + np.clip(
-                target_liquidation - liquidation_ratio, -0.02, 0.035
+            proposed_rate, proposed_ceiling, proposed_liquidation = rate_limited_update(
+                rate,
+                ceiling,
+                liquidation_ratio,
+                (target_rate, target_ceiling, target_liquidation),
             )
             if not architecture.control_rate:
                 proposed_rate = np.full(n_paths, cfg.initial_rate)
@@ -462,11 +465,12 @@ def simulate_protocol(
             ceiling = ceiling_queue.pop(0)
             liquidation_ratio = liquidation_queue.pop(0)
 
-        trigger = (
-            (dex_basis > cfg.breaker_basis)
-            | (disagreement > cfg.breaker_disagreement)
-            | (observed_volatility > cfg.breaker_volatility)
-            | (oracle_age > 36.0)
+        trigger = breaker_trigger(
+            dex_basis,
+            disagreement,
+            observed_volatility,
+            oracle_age,
+            controller_cfg,
         )
         if architecture.circuit_breaker:
             breaker_cooldown = np.where(trigger, cfg.breaker_cooldown_steps, np.maximum(breaker_cooldown - 1, 0))

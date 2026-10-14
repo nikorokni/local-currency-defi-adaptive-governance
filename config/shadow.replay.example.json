@@ -1,0 +1,31 @@
+{
+  "mode": "replay",
+  "source": {
+    "type": "csv",
+    "path": "../data/shadow/replay_example.csv"
+  },
+  "output": {
+    "jsonl_path": "../results/shadow_decisions.jsonl"
+  },
+  "poll_interval_seconds": 21600,
+  "breaker_cooldown_steps": 4,
+  "controller": {
+    "initial_rate": 0.08,
+    "initial_debt_ceiling": 1.0,
+    "initial_liquidation_ratio": 1.5,
+    "max_rate": 1.5,
+    "min_ceiling": 0.2,
+    "max_liquidation_ratio": 2.2,
+    "breaker_basis": 0.065,
+    "breaker_disagreement": 0.14,
+    "breaker_volatility": 0.1
+  },
+  "initial_state": {
+    "annual_rate": 0.08,
+    "debt_ceiling": 1.0,
+    "liquidation_ratio": 1.5,
+    "ewma_variance": 0.0001,
+    "breaker_cooldown": 0,
+    "previous_oracle_ratio": null
+  }
+}

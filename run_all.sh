@@ -24,7 +24,12 @@ print("Validated 7 publication PNG figures")
 PY
 sync figures/*.png
 
-python3 -Werror -m py_compile analysis/model.py analysis/run_analysis.py
+python3 -Werror -m py_compile \
+    analysis/model.py \
+    analysis/risk_engine.py \
+    analysis/run_analysis.py \
+    analysis/run_shadow.py \
+    analysis/shadow_mode.py
 python3 -m unittest discover -s tests -q
 
 cd manuscript

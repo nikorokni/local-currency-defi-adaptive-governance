@@ -10,3 +10,4 @@ manuscript/*.blg
 manuscript/*.log
 manuscript/*.out
 manuscript/*.synctex.gz
+results/shadow*.jsonl
