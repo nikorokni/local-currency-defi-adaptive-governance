@@ -29,7 +29,9 @@ python3 -Werror -m py_compile \
     analysis/risk_engine.py \
     analysis/run_analysis.py \
     analysis/run_shadow.py \
-    analysis/shadow_mode.py
+    analysis/shadow_mode.py \
+    analysis/stability_topology.py \
+    analysis/run_stability_topology.py
 python3 -m unittest discover -s tests -q
 
 cd manuscript

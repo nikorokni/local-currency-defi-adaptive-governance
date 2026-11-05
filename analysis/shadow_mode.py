@@ -221,7 +221,9 @@ class ShadowRiskEngine:
             ratio_return = math.log(oracle_ratio / state.previous_oracle_ratio)
 
         ewma_variance = _float(
-            update_ewma_variance(state.ewma_variance, ratio_return)
+            update_ewma_variance(
+                state.ewma_variance, ratio_return, self.config.ewma_memory
+            )
         )
         volatility = math.sqrt(ewma_variance)
         utilization = observation.debt_value_usd / state.debt_ceiling
@@ -231,6 +233,7 @@ class ShadowRiskEngine:
                 observation.dex_basis,
                 disagreement,
                 utilization,
+                self.config,
             )
         )
         targets = compute_targets(risk_score, utilization, self.config)
@@ -239,6 +242,7 @@ class ShadowRiskEngine:
             state.debt_ceiling,
             state.liquidation_ratio,
             targets,
+            self.config,
         )
         triggered = bool(
             _float(
@@ -272,10 +276,11 @@ class ShadowRiskEngine:
             debt_value_usd=observation.debt_value_usd,
             utilization=utilization,
             risk_score=risk_score,
-            volatility_component=4.0 * volatility,
-            basis_component=3.2 * observation.dex_basis,
-            disagreement_component=1.8 * disagreement,
-            utilization_component=0.9 * max(utilization - 0.72, 0.0),
+            volatility_component=self.config.volatility_weight * volatility,
+            basis_component=self.config.basis_weight * observation.dex_basis,
+            disagreement_component=self.config.disagreement_weight * disagreement,
+            utilization_component=self.config.utilization_weight
+            * max(utilization - 0.72, 0.0),
             baseline_annual_rate=state.annual_rate,
             baseline_debt_ceiling=state.debt_ceiling,
             baseline_liquidation_ratio=state.liquidation_ratio,

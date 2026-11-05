@@ -19,6 +19,7 @@
 <p align="center">
   <a href="manuscript/main.pdf"><strong>Read the paper</strong></a> ·
   <a href="#reproduce"><strong>Reproduce the analysis</strong></a> ·
+  <a href="#360-point-stability-and-topology-experiment"><strong>Stability experiment</strong></a> ·
   <a href="#read-only-shadow-mode"><strong>Run shadow mode</strong></a> ·
   <a href="#research-series"><strong>Explore the series</strong></a>
 </p>
@@ -81,7 +82,9 @@ The trade-off is explicit: protection improves sharply, but issuance falls from 
 | [`tables/`](tables/) · [`figures/`](figures/) | Publication exhibits |
 | [`tests/`](tests/) | Automated checks for the risk engine and workflow |
 | [`manuscript/`](manuscript/) | LaTeX source and compiled paper |
+| [`stability_report/`](stability_report/) | LaTeX source for the separate stability/topology report |
 | [`documentation/`](documentation/) | Data, replication, and shadow-mode documentation |
+| [`output/pdf/stability_topology_report.pdf`](output/pdf/stability_topology_report.pdf) | Compiled 360-point experiment report |
 
 ## Reproduce
 
@@ -93,6 +96,28 @@ python -m pip install -r requirements.txt
 ```
 
 The workflow regenerates the simulations, sensitivity tables, figures, and compiled manuscript.
+
+## 360-point stability and topology experiment
+
+The repository also contains a deterministic parameter-space experiment that first
+searches 96 broad Latin-hypercube points, selects a convergent centre, and then
+evaluates 360 meaningful perturbations around that centre. Each local point is
+tested under six closed-loop stress/delay cases and on 192 common Monte Carlo
+paths for each of ARS and TRY (138,240 point-currency protocol paths in total).
+
+```bash
+python3 analysis/run_stability_topology.py
+./stability_report/build_report.sh
+```
+
+The local cloud converged robustly at all 360 points. Its stable set is connected
+at the analysed scale, while the observed one-dimensional persistence is not
+larger than a matched uniform-cloud null distribution. This supports a local
+stable basin, not a claim of global stability. See the
+[`methodology and output map`](documentation/STABILITY_TOPOLOGY_EXPERIMENT.md) and
+the [`compiled report`](output/pdf/stability_topology_report.pdf). Raw outputs are
+under [`results/stability_topology/`](results/stability_topology/) and the five
+diagnostic figures are under [`figures/stability_topology/`](figures/stability_topology/).
 
 ## Read-only shadow mode
 

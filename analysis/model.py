@@ -347,11 +347,12 @@ def simulate_protocol(
     official_gap_multiplier: float = 1.0,
     attack_scale: float = 1.0,
     keep_paths: int = 5,
+    risk_config: RiskEngineConfig | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Simulate lending, liquidations, DEX pressure, and adaptive controls."""
 
     cfg = config or SimulationConfig()
-    controller_cfg = RiskEngineConfig(
+    controller_cfg = risk_config or RiskEngineConfig(
         initial_rate=cfg.initial_rate,
         initial_debt_ceiling=cfg.initial_debt_ceiling,
         initial_liquidation_ratio=cfg.initial_liquidation_ratio,
@@ -432,13 +433,19 @@ def simulate_protocol(
         disagreement_sum += disagreement
 
         ratio_return = market.eth_step_log_return[:, step] - market.fx_step_log_return[:, step]
-        ewma_variance = update_ewma_variance(ewma_variance, ratio_return)
+        ewma_variance = update_ewma_variance(
+            ewma_variance, ratio_return, controller_cfg.ewma_memory
+        )
         observed_volatility = np.sqrt(ewma_variance)
 
         debt_value_oracle = (debt_units * lcu_hat[:, None]).sum(axis=1)
         utilization = debt_value_oracle / np.maximum(ceiling, 1e-15)
         risk_score = compute_risk_score(
-            observed_volatility, dex_basis, disagreement, utilization
+            observed_volatility,
+            dex_basis,
+            disagreement,
+            utilization,
+            controller_cfg,
         )
         target_rate, target_ceiling, target_liquidation = compute_targets(
             risk_score, utilization, controller_cfg
@@ -450,6 +457,7 @@ def simulate_protocol(
                 ceiling,
                 liquidation_ratio,
                 (target_rate, target_ceiling, target_liquidation),
+                controller_cfg,
             )
             if not architecture.control_rate:
                 proposed_rate = np.full(n_paths, cfg.initial_rate)

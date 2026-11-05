@@ -1,0 +1,97 @@
+{
+  "baseline_probe": {
+    "bounded_case_share": 1.0,
+    "converged_case_share": 0.6666666666666666,
+    "mean_tail_step_norm": 0.006850411779335046,
+    "robust_converged": false,
+    "stability_score": 0.5625125627258591,
+    "worst_contraction_ratio": 3.7124783400952315,
+    "worst_final_spread": 0.2237272889122741,
+    "worst_tail_range": 0.057223111200219556
+  },
+  "common_market_paths": true,
+  "currencies": [
+    "ARS",
+    "TRY"
+  ],
+  "experiment_seed": 20261105,
+  "files": {
+    "figures/stability_topology/figure1_parameter_cloud_pca.png": "3eefcfd532f39b472596f85b6788e7a6a6727018e0a57413ac7bb7adbe2d5ecf",
+    "figures/stability_topology/figure2_betti_curves.png": "4aeb4b45ff6195a3701dcd3210bb9b2fa0c8505f5625d3e87fdf4d1300f4b54e",
+    "figures/stability_topology/figure3_parameter_influence.png": "681fd9f1a47a6ff0ddf48aa74a167e59dfdb41fd83b2c26afb4f17a11f824647",
+    "figures/stability_topology/figure4_economic_tradeoff.png": "ac01b606e2b6c26e77bae07d70d4a9ddb363153ecfb647ab5a65f97d3640f439",
+    "figures/stability_topology/figure5_stability_distributions.png": "3affddcd07a804b8a93d79d92479cd901050dfd6b31b3ca49cfc854edd77a1ce",
+    "results/stability_topology/economic_results_by_currency.csv": "d5c24dee958bf2ef68b1fcca70446194b7ac3fc8d5ed15f6761ac954490bf1ca",
+    "results/stability_topology/local_360_parameter_results.csv": "5bb83465242ba23c6328b96d17b6d4fa962388ff7872badc0b041953d0601fd3",
+    "results/stability_topology/parameter_influence.csv": "df2e029a2c69de8db4b6feb44f90ff9dfaae798d74eaf0f1d4a6165fb8da8469",
+    "results/stability_topology/pilot_parameter_search.csv": "f395cf6df4ccb04b36c1c3eab69003d469da060ab0c79e298b878ba7605eb8da",
+    "results/stability_topology/topology_betti_curves.csv": "8502e6c3319f2d1a0eccbf1cf92585ce152fcada1dc03f7e12c566d75b41c61f",
+    "results/stability_topology/topology_persistence_intervals.csv": "4620a00c71c11c741b7d9e75fa7214cd97d36342d586f57cce2069f5bb3fcd72"
+  },
+  "local_bounds": {
+    "basis_weight": [
+      2.0,
+      2.7666740906684657
+    ],
+    "ceiling_risk_gain": [
+      0.8,
+      1.1751752242576534
+    ],
+    "disagreement_weight": [
+      1.1646966545177424,
+      1.812696654517742
+    ],
+    "ewma_memory": [
+      0.9132914356274495,
+      0.9780914356274495
+    ],
+    "liquidation_risk_gain": [
+      0.44402201376075245,
+      0.7140220137607525
+    ],
+    "rate_risk_gain": [
+      0.5,
+      0.6688692807611236
+    ],
+    "utilization_weight": [
+      0.5288684233896427,
+      0.8888684233896426
+    ],
+    "volatility_weight": [
+      2.6373203593683567,
+      3.717320359368357
+    ]
+  },
+  "local_points": 360,
+  "market_paths_per_currency": 192,
+  "median_pooled_bad_debt_probability": 0.0026041666666666665,
+  "median_pooled_credit": 0.21473725907209237,
+  "median_stability_score": 0.009751604190814795,
+  "pilot_points": 96,
+  "robust_converged_points": 360,
+  "robust_converged_share": 1.0,
+  "stable_centre": {
+    "basis_weight": 2.316674090668466,
+    "ceiling_risk_gain": 0.8151752242576534,
+    "disagreement_weight": 1.4886966545177422,
+    "ewma_memory": 0.9456914356274495,
+    "liquidation_risk_gain": 0.5790220137607525,
+    "rate_risk_gain": 0.5248692807611236,
+    "utilization_weight": 0.7088684233896426,
+    "volatility_weight": 3.1773203593683568
+  },
+  "topology": {
+    "connection_radius": 0.7390484809875488,
+    "h1_null_test_p_value": 0.9354838709677419,
+    "interpretation": "Connected at the analysed neighbourhood scale",
+    "maximum_beta1": 158,
+    "maximum_h1_persistence": 0.18443751335144043,
+    "minimum_beta0": 1,
+    "nontrivial_h1_beyond_uniform_null": false,
+    "null_max_h1_persistence_median": 0.1979639232158661,
+    "null_max_h1_persistence_p95": 0.22651058137416838,
+    "pca_two_component_variance_share": 0.289293180115789,
+    "stable_points": 360,
+    "topology_sufficient": true
+  }
+}
