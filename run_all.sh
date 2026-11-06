@@ -31,7 +31,8 @@ python3 -Werror -m py_compile \
     analysis/run_shadow.py \
     analysis/shadow_mode.py \
     analysis/stability_topology.py \
-    analysis/run_stability_topology.py
+    analysis/run_stability_topology.py \
+    analysis/create_methodology_diagram.py
 python3 -m unittest discover -s tests -q
 
 cd manuscript

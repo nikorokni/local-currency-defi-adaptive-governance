@@ -116,8 +116,11 @@ larger than a matched uniform-cloud null distribution. This supports a local
 stable basin, not a claim of global stability. See the
 [`methodology and output map`](documentation/STABILITY_TOPOLOGY_EXPERIMENT.md) and
 the [`compiled report`](output/pdf/stability_topology_report.pdf). Raw outputs are
-under [`results/stability_topology/`](results/stability_topology/) and the five
+under [`results/stability_topology/`](results/stability_topology/) and the six
 diagnostic figures are under [`figures/stability_topology/`](figures/stability_topology/).
+The complete methodology flow is available as an editable
+[`SVG`](figures/stability_topology/figure6_methodology_pipeline.svg) and a
+publication-resolution [`PNG`](figures/stability_topology/figure6_methodology_pipeline.png).
 
 ## Read-only shadow mode
 

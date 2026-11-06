@@ -175,4 +175,5 @@ The conclusion is deliberately limited:
 | `results/stability_topology/topology_betti_curves.csv` | Betti numbers across filtration scale |
 | `results/stability_topology/parameter_influence.csv` | rank correlations and p-values |
 | `results/stability_topology/experiment_summary.json` | seed, bounds, headline results, and SHA-256 hashes |
-| `figures/stability_topology/` | five publication-ready figures |
+| `figures/stability_topology/` | six publication-ready figures, including the methodology pipeline in PNG and SVG |
+| `analysis/create_methodology_diagram.py` | deterministic source for the methodology pipeline figure |

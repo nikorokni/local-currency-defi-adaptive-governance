@@ -160,6 +160,16 @@ It is a centre for local robustness sampling, not a claimed economic optimum.
 
 \section{Experimental design}
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figure6_methodology_pipeline.png}
+\caption{End-to-end methodology. Broad parameter sampling and common market
+inputs feed the parameterised controller. Every local vector is then evaluated
+through a reduced closed-loop convergence probe and a full economic simulation
+before stability, economic, and topological evidence are synthesised.}
+\label{fig:methodology-pipeline}
+\end{figure}
+
 \subsection{Meaningful random sampling}
 
 Independent uniform draws can cluster and leave large gaps. We instead use a
@@ -351,6 +361,8 @@ Repository path & Purpose\\
 Betti numbers, persistent homology, and influence measures.\\
 \path{analysis/run_stability_topology.py} & End-to-end 96+360 point
 experiment, full economic runs, CSVs, figures, hashes, and summary.\\
+\path{analysis/create_methodology_diagram.py} & Deterministic source for the
+publication methodology pipeline in PNG and editable SVG formats.\\
 \path{results/stability_topology/pilot_parameter_search.csv} & Broad
 96-point search and stability metrics.\\
 \path{results/stability_topology/local_360_parameter_results.csv} & All
