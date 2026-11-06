@@ -7,6 +7,7 @@ mkdir -p "$MPLCONFIGDIR"
 
 cd "$PROJECT_DIR"
 python3 analysis/run_analysis.py
+python3 analysis/create_methodology_diagram.py
 
 python3 - <<'PY'
 from pathlib import Path
@@ -42,8 +43,8 @@ pdflatex -interaction=nonstopmode -halt-on-error \
 pdflatex -interaction=nonstopmode -halt-on-error \
     -output-directory="$LATEX_BUILD_DIR" main.tex
 
-gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -dCompatibilityLevel=1.5 \
-    -dPDFSETTINGS=/prepress \
+gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -dCompatibilityLevel=1.7 \
+    -dPDFSETTINGS=/ebook \
     -sOutputFile="$LATEX_BUILD_DIR/main-final.pdf" \
     "$LATEX_BUILD_DIR/main.pdf"
 cp "$LATEX_BUILD_DIR/main-final.pdf" main.pdf

@@ -290,7 +290,7 @@ def build_figure() -> plt.Figure:
     ax.text(
         0.04,
         0.963,
-        "Methodological pipeline: from parameter sampling to stability evidence",
+        "Methodological pipeline: parameter sampling, simulation and stability analysis",
         transform=ax.transAxes,
         ha="left",
         va="top",
@@ -301,7 +301,7 @@ def build_figure() -> plt.Figure:
     ax.text(
         0.04,
         0.927,
-        "A deterministic 96 + 360 point design combining closed-loop convergence, economic simulation and persistent homology",
+        "A deterministic 96 + 360 point design linking controller calculations to convergence, economic and topological outputs",
         transform=ax.transAxes,
         ha="left",
         va="top",
@@ -362,7 +362,7 @@ def build_figure() -> plt.Figure:
     ax.text(
         0.066,
         0.552,
-        r"$q_t$ return  •  $b_t$ DEX basis  •  $\delta_t$ disagreement  •  $u_t$ utilisation",
+        r"$\Delta\log\widehat R_t$ return  •  $b_t$ DEX basis  •  $\delta_t$ disagreement  •  $u_t$ utilisation",
         transform=ax.transAxes,
         fontsize=9.3,
         color=COLORS["ink"],
@@ -374,9 +374,9 @@ def build_figure() -> plt.Figure:
     formula_widths = (0.205, 0.205, 0.185, 0.155)
     formula_titles = ("EWMA risk memory", "Composite risk score", "Control targets", "Bounded actuation")
     formulas = (
-        r"$v_{t+1}=\beta v_t+(1-\beta)q_t^2$",
-        r"$R_t=\mathrm{clip}_{[0,1]}\!\left(w_\sigma\sqrt{v}+w_bb+w_\delta\delta+w_u(u-.72)_+\right)$",
-        r"$(r_t^*,C_t^*,\lambda_t^*)=f(R_t,u_t;\theta)$",
+        r"$v_{t+1}=\beta v_t+(1-\beta)(\Delta\log\widehat R_t)^2$",
+        r"$s_t=\mathrm{clip}_{[0,1]}\!\left(w_\sigma\sqrt{v}+w_bb+w_\delta\delta+w_u(u-.72)_+\right)$",
+        r"$(r_t^*,C_t^*,\lambda_t^*)=f(s_t,u_t;\theta)$",
         r"$x_{t+1}=\mathrm{rate\!\!\_limit}(x_t,x_t^*)$",
     )
     for x, width, title, formula in zip(
@@ -589,25 +589,25 @@ def build_figure() -> plt.Figure:
             0.04,
             COLORS["purple"],
             COLORS["purple_light"],
-            "LOCAL STABILITY",
-            "360 / 360 robust",
-            "261 pass all six cases; 99 pass five",
+            "CONVERGENCE OUTPUT",
+            "robust label + continuous stability score",
+            "boundedness • coverage • movement • range • spread • contraction",
         ),
         (
             0.354,
             COLORS["orange"],
             COLORS["orange_light"],
-            "ECONOMIC TRADE-OFF",
-            "median bad-debt probability 0.2604%",
-            "credit, depeg and breaker use remain explicit",
+            "ECONOMIC OUTPUTS",
+            "bad debt • depeg • credit • pause • turnover",
+            "paired ARS/TRY outcomes under common market shocks",
         ),
         (
             0.668,
             COLORS["green"],
             COLORS["green_light"],
-            "STABLE-SET TOPOLOGY",
-            r"normalise 8D → Vietoris–Rips + 30 null clouds",
-            r"$\beta_0=1$; $H_1$ null $p=0.9355$: connected, no exceptional hole",
+            "TOPOLOGICAL OUTPUT",
+            r"normalised 8D stable set → Vietoris–Rips",
+            r"$\beta_0$, $H_1$ persistence and a 30-cloud matched-null $p$-value",
         ),
     )
     for x, accent, light, heading, main, detail in output_specs:
@@ -651,7 +651,7 @@ def build_figure() -> plt.Figure:
     ax.text(
         0.5,
         0.015,
-        "Interpretation boundary: computational evidence for a connected local stability basin — not a global Lyapunov proof or a live-deployment claim.",
+        "Interpretation boundary: convergence, economic safety and topology are separate outputs; finite simulation is not a global Lyapunov proof.",
         transform=ax.transAxes,
         ha="center",
         va="center",
@@ -670,6 +670,9 @@ def main() -> None:
     figure.savefig(png_path, dpi=240, bbox_inches="tight", facecolor=COLORS["paper"])
     figure.savefig(svg_path, bbox_inches="tight", facecolor=COLORS["paper"])
     plt.close(figure)
+    svg_path.write_text(
+        "\n".join(line.rstrip() for line in svg_path.read_text().splitlines()) + "\n"
+    )
     print(f"Wrote {png_path.relative_to(ROOT)}")
     print(f"Wrote {svg_path.relative_to(ROOT)}")
 

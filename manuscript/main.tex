@@ -291,6 +291,39 @@ Five robustness families supplement the main experiment:
 
 Sensitivity experiments use 1,200 paths per cell. They are large enough for a stable mechanism comparison at the reported precision but are not a substitute for parameter estimation. Code, seeds, raw inputs, checksums, generated CSVs, tables, figures, and tests are released together.
 
+\subsection{Parameter-neighbourhood stability experiment}
+
+The fixed controller coefficients in Equations~\eqref{eq:risk-score}--\eqref{eq:targets}
+are collected in an eight-dimensional vector
+$\theta=(\beta,w_\sigma,w_b,w_\delta,w_u,g_r,g_C,g_\lambda)$.
+A deterministic 96-point Latin-hypercube pilot spans broad admissible bounds and
+selects a robust centre. A second 360-point Latin hypercube perturbs all eight
+coefficients simultaneously in a local neighbourhood around that centre.
+
+Each local vector is evaluated in two complementary layers. First, a reduced
+closed-loop model is started from nine perturbed initial states under calm,
+moderate, and crisis conditions, both without delay and with a 48-hour delay.
+Tail movement, tail range, terminal spread, contraction, and boundedness define
+the convergence label and continuous stability score. Second, the full economic
+simulator runs the vector on 192 common ARS and 192 common TRY paths. The stable
+point cloud is normalised in eight dimensions and analysed with a Vietoris--Rips
+filtration, persistent homology, and 30 matched Latin-hypercube null clouds.
+Figure~\ref{fig:stability-methodology} shows the complete input--calculation--output
+pipeline. Detailed numeric outputs are released separately so that this
+additional robustness exercise remains distinguishable from the 6,000-path main
+architecture comparison.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{../figures/stability_topology/figure6_methodology_pipeline.png}
+\caption{Methodology for the parameter-neighbourhood stability experiment.
+Controller coefficients, empirical market inputs, and deterministic experiment
+controls feed a parameterised adaptive controller. Each sampled vector is then
+evaluated through a reduced closed-loop convergence probe and the full economic
+simulator before convergence, economic, and topological outputs are reported.}
+\label{fig:stability-methodology}
+\end{figure*}
+
 \section{Results}\label{sec:results}
 
 \subsection{Main architecture comparison}
