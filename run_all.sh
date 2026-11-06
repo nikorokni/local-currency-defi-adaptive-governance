@@ -16,14 +16,15 @@ from PIL import Image
 figures = sorted(Path("figures").glob("*.png"))
 if len(figures) != 7:
     raise SystemExit(f"Expected 7 figures, found {len(figures)}")
-for path in figures:
+methodology = Path("figures/stability_topology/figure6_methodology_pipeline.png")
+for path in [*figures, methodology]:
     with Image.open(path) as image:
         image.load()
         if image.width < 1_000 or image.height < 600:
             raise SystemExit(f"Figure is unexpectedly small: {path} {image.size}")
-print("Validated 7 publication PNG figures")
+print("Validated 7 result figures and the methodology pipeline PNG")
 PY
-sync figures/*.png
+sync figures/*.png figures/stability_topology/figure6_methodology_pipeline.png
 
 python3 -Werror -m py_compile \
     analysis/model.py \

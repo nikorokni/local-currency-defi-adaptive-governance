@@ -67,27 +67,37 @@ The main result is conditional but sharp. The full architecture materially reduc
 
 \section{Related Literature and Research Gap}\label{sec:literature}
 
-\subsection{Oracles, manipulation, and latency}
+\subsection{Oracle construction, manipulation, and liquidation}
 
-Smart contracts cannot observe off-chain prices without an oracle trust model. Eskandari et al. \cite{Eskandari2021} systematise the path from ground truth to on-chain use and show that data sourcing, aggregation, and update design each create attack surfaces. Flash-loan research demonstrates how temporarily moving a price can alter borrowing and liquidation within a single transaction or short interval \cite{Qin2021}. More recent oracle work seeks manipulation resistance with medians, time weighting, and multiple observation windows, but those defences create an accuracy--latency trade-off \cite{Bai2025}. Sadeghi and Feinstein \cite{Sadeghi2026} explicitly note that hardened mechanisms such as TWAPs and medianized feeds can delay liquidations during sharp declines.
+Smart contracts cannot observe an off-chain price without choosing a trust and timing model. Eskandari et al. \cite{Eskandari2021} decompose an oracle into the path from ground truth through data sources, aggregation, transport, and contract integration; failure can enter at every stage. Flash-loan evidence shows that a temporarily displaced venue price can change borrowing capacity and liquidation within a transaction or a short block interval \cite{Qin2021}. Manipulation-resistant designs consequently combine medians, time weighting, and multiple observation windows, but resistance is purchased with latency when the underlying market moves abruptly \cite{Bai2025}. Sadeghi and Feinstein \cite{Sadeghi2026} formalise the corresponding liquidation trade-off: a hardened or delayed price can reduce manipulation exposure while postponing economically necessary liquidation.
 
-Operational documentation reaches a similar conclusion from a different direction. Chainlink feeds expose an update timestamp because a correct historical answer can still be unsafe for an application that requires a current answer \cite{ChainlinkFeeds}. A robust integration therefore needs both \emph{value validation} and \emph{freshness validation}. Our architecture adds a third check: economic disagreement between price domains. This is important for a local-currency instrument because an official price and a parallel price can both be genuine observations of different settlement regimes.
+Liquidation is not only a lender-loss mechanism. Measurements across Aave, Compound, MakerDAO, and dYdX show that prevalent designs can incentivise liquidators while selling more discounted collateral than is necessary from the borrower's perspective \cite{QinLiquidations2021}. That evidence motivates reporting unnecessary liquidation separately from bad debt. Operational guidance also treats freshness as an application-level responsibility: Chainlink exposes update timestamps and recommends validation or a safe alternate mode when a feed is not sufficiently current \cite{ChainlinkFeeds}. The resulting design problem has at least three dimensions: numerical validity, temporal freshness, and economic representativeness.
 
-\subsection{Algorithmic lending parameters and governance}
+The third dimension is central here. An official FX rate and a parallel or DEX rate need not be noisy measurements of one latent price; they can be valid prices for different settlement domains. Medianisation can reject one corrupted source, but it cannot decide which institutional domain a liability should settle against. The model therefore retains source disagreement as a controller input rather than treating it as measurement error to be averaged away.
 
-Protocols for loanable funds set rates and collateral conditions by code, while governance selects parameters and sometimes the rule itself \cite{Gudgeon2020,Werner2022}. Evidence from Compound shows that utilisation enters piecewise-linear interest-rate functions and that more volatile assets tend to receive steeper rules \cite{Chaudhary2023}. Chiu et al. \cite{Chiu2023} show theoretically that rigidity can amplify a price--liquidity feedback and that flexible smart-contract updates can restore a unique equilibrium in their setting.
+\subsection{Algorithmic lending, adaptive control, and governance latency}
 
-Adaptive DeFi research provides more direct comparators. Auto.gov uses a reinforcement-learning agent to adjust lending parameters and reports improved simulated profitability during oracle attacks \cite{Xu2025}. Bastankhah et al. \cite{Bastankhah2024} separate a fast interest controller from a slower collateral planner and establish convergence and robustness properties. These approaches show that automation can be more responsive than manual votes. They also raise governance questions: which state variables are admissible, what happens under distribution shift, how are actions bounded, and who may stop the controller? We therefore use an interpretable monotone score, explicit parameter domains, and per-step rate limits. The objective is auditability of the comparative mechanism, not machine-learning performance.
+DeFi loanable-funds protocols encode utilisation-dependent rates and collateral constraints, while governance selects parameters and sometimes the rule itself \cite{Gudgeon2020,Werner2022}. Compound data confirm that utilisation enters piecewise-linear interest-rate schedules and that volatile assets tend to receive steeper rules \cite{Chaudhary2023}. Chiu et al. \cite{Chiu2023} show theoretically that rigid lending terms can amplify a price--liquidity feedback, whereas sufficiently flexible updates can restore a unique equilibrium in their setting. These results establish that a risk parameter is part of the state-transition mechanism, not merely an administrative number.
 
-\subsection{Stablecoin parity and local-currency execution}
+Adaptive-governance studies provide closer comparators. Auto.gov uses reinforcement learning to adjust lending parameters and reports improved simulated profitability during oracle attacks \cite{Xu2025}. Bastankhah et al. \cite{Bastankhah2024} separate a fast interest controller from a slower collateral planner and derive convergence and robustness properties. The present study asks a different institutional question: can a deliberately simple, auditable, monotone controller deliver defensive value when the observable state includes FX segmentation, DEX inventory pressure, and execution delay? Its actions are therefore clipped, rate-limited, and restricted to a pre-authorised mandate. Human governance sets the domain and can withdraw authority; the controller does not optimise an unconstrained black-box objective.
 
-Stablecoin parity depends on redemption access, liquidity, and arbitrage rather than the declared peg alone \cite{Lyons2023,Ma2023}. Emerging-market stablecoins add exchange controls, segmented settlement, and time-varying hard-currency demand \cite{Auer2023}. Aldasoro, Beltran, and Grinberg \cite{Aldasoro2026} show that stablecoin-implied FX prices can deviate from conventional FX prices and that intermediary capital conditions amplify the response to flows. These findings motivate a state variable for the official--parallel gap and a separate endogenous DEX basis.
+This distinction also separates \emph{decision latency} from \emph{oracle latency}. A current estimate can still be acted on too late, while an immediate action can still be based on stale or institutionally mismatched data. The architecture comparison varies these channels separately and measures the cost of a hard pause in the same outcome vector as loss reduction.
 
-The companion peg-stability analysis makes finite arbitrage and redemption capacity explicit \cite{RokniLamouki2026Peg}. The present paper holds market-depth assumptions transparent and asks what governance can still do: reduce issuance, increase its price, demand more collateral, or temporarily stop new draws. The residual depeg under the strongest controller is therefore not a coding failure. It is the model's test of whether exogenous conversion flow has crossed the market-capacity boundary.
+\subsection{Stablecoin parity and emerging-market FX segmentation}
 
-\subsection{Research gap}
+Stablecoin parity depends on redemption access, market liquidity, and arbitrage capacity rather than the declared unit of account alone \cite{Lyons2023,Ma2023}. Emerging-market instruments add capital controls, segmented settlement, and time-varying demand for hard currency \cite{Auer2023}. Aldasoro, Beltran, and Grinberg \cite{Aldasoro2026} show that stablecoin-implied FX prices can diverge from conventional FX prices and that intermediary balance-sheet conditions amplify the response to flows. Together, this literature implies that an oracle can be statistically accurate for one market while economically unsuitable for another.
 
-Existing work explains oracle attacks, adaptive interest rules, or stablecoin parity separately. The missing link is a path-dependent local-currency lending model in which (i) price sources represent different settlement domains; (ii) source latency and manipulation affect borrowing and liquidation; (iii) issuance feeds back into a DEX discount; (iv) three risk parameters move together; and (v) governance delay and circuit-breaker cost are measured on the same paths. Figure~\ref{fig:architecture} summarises the proposed system.
+The companion peg-stability analysis makes finite arbitrage and redemption capacity explicit \cite{RokniLamouki2026Peg}. The present model adds endogenous protocol issuance to that market-capacity channel. Governance may raise the borrowing rate, reduce the ceiling, require more collateral, or stop new draws; it cannot create arbitrage capital or settlement access. A residual depeg under the strongest controller is therefore an economic boundary condition rather than evidence that the controller failed to execute its stated rule.
+
+\subsection{Simulation robustness and topology of stable parameters}
+
+The empirical record is too short to estimate a high-dimensional policy rule without strong structure. We instead use a mechanism-oriented simulation design. Joint FX and ETH dependence is preserved locally with a moving-block bootstrap \cite{Kunsch1989}; architecture comparisons reuse the same paths to remove variation caused only by different shock draws. For coefficient robustness, Latin-hypercube sampling stratifies every marginal parameter range and provides more even coverage than independent random draws in a finite computer experiment \cite{McKay1979}.
+
+A cloud of convergent coefficients can still consist of disconnected islands or contain apparent holes created by sparse sampling. Topological data analysis studies such point-cloud structure across distance scales \cite{Carlsson2009}. We use Vietoris--Rips persistent homology, following the computational pipeline surveyed by Otter et al. \cite{Otter2017}, and compare the largest one-dimensional persistence with matched Latin-hypercube null clouds. This is descriptive evidence about a sampled local basin. It is not a Lyapunov proof, a claim of global contractibility, or a substitute for formal verification.
+
+\subsection{Synthesis and research gap}
+
+The literature provides strong analyses of oracle manipulation, lending feedback, adaptive parameter rules, liquidation, and stablecoin arbitrage, but usually studies these mechanisms separately. The unresolved object is a path-dependent local-currency lending system in which (i) price sources represent distinct settlement domains; (ii) source latency, source manipulation, and governance delay are separate channels; (iii) borrowing feeds back into a persistent DEX discount under finite correction capacity; (iv) the borrowing rate, ceiling, and liquidation ratio move jointly; (v) a breaker preserves deleveraging while stopping new exposure; and (vi) loss, peg support, liquidation quality, credit access, dynamical convergence, and parameter-space topology are evaluated without collapsing them into one welfare score. Figure~\ref{fig:architecture} summarises that integrated object.
 
 \begin{figure*}[t]
 \centering
@@ -145,6 +155,12 @@ To preserve comparability with the companion papers, the analysis uses the same 
 \end{table*}
 
 The sample is intentionally inherited rather than extended opportunistically. This makes the fourth paper a controlled mechanism comparison on the same macro histories. It also limits external validity: results reflect a period containing the pandemic shock, crypto boom and drawdown, and substantial ARS and TRY depreciation, but not every capital-control or market-structure regime.
+
+\subsection{Empirical inputs, scenario inputs, and identification boundary}
+
+The design separates quantities inherited from data from quantities required to construct a counterfactual market. Observed monthly ARS/USD, TRY/USD, and ETH/USD returns determine the joint macro shock blocks. The six-hour arrival pattern, official--parallel gap process, attack timing, demand elasticity, DEX depth, arbitrage capacity, auction haircut, and controller coefficients are transparent scenario parameters. They are varied in dedicated sensitivities rather than represented as estimated high-frequency facts. Initial loan-book composition and policy bounds are held fixed across architectures so that a comparison changes the oracle and control mechanism, not the population of borrowers exposed to it.
+
+Accordingly, the estimand is conditional on the scenario generator. The experiment identifies a within-model counterfactual difference between architectures under identical shocks; it does not identify the causal effect of deploying the controller in a live market. This boundary also prevents the 42 monthly returns from being presented as sufficient data for structural estimation of an eight-parameter control law.
 
 \subsection{Joint block sampling}
 
@@ -277,7 +293,43 @@ The breaker triggers when $b_t>6.5\%$, $\delta_t>14\%$, or $\widehat\sigma_t>10\
 
 \section{Experimental Design}\label{sec:experiments}
 
-The main experiment uses 6,000 paired paths for each of two currencies and four architectures: 48,000 architecture-path evaluations, each with 480 six-hour steps. A bad-debt event is cumulative loss above 0.001 initial-ceiling units. A severe depeg is a maximum DEX discount above 10\%; the time share above 5\% is retained separately. Oracle error is the absolute log error in $R_t$.
+\subsection{Counterfactual estimand and paired simulation}
+
+Let $a\in\mathcal{A}$ index the four architectures, $j\in\{\mathrm{ARS},\mathrm{TRY}\}$ the currency, and $p=1,\ldots,N$ a market path. The simulator maps the common exogenous path $\omega_{jp}$ and architecture $a$ into a path-level outcome vector
+
+\begin{equation}
+ Y_{jap}=\mathcal{M}(a,\omega_{jp})=
+ \left(B_{jap},G_{jap},Q_{jap},E_{jap},X_{jap},P_{jap}\right),
+ \label{eq:estimand-map}
+\end{equation}
+
+where $B$ is the bad-debt-event indicator, $G$ the severe-depeg indicator, $Q$ cumulative accepted credit, $E$ oracle error, $X$ unnecessary liquidation, and $P$ pause share. For an outcome component $k$, the reported architecture contrast is the paired finite-simulation estimand
+
+\begin{equation}
+ \widehat\Delta_{jk}(a,a')=
+ \frac{1}{N}\sum_{p=1}^{N}
+ \left[Y_{jap}^{(k)}-Y_{ja'p}^{(k)}\right].
+ \label{eq:paired-estimand}
+\end{equation}
+
+Every architecture receives the same sampled months, bridge innovations, jump locations, attack indicators, and measurement noise on path $p$. These common random numbers remove between-architecture variation caused only by different shocks. The contrast is therefore precise for the simulated population, but remains conditional on model structure and calibration.
+
+\subsection{Main experiment and outcome definitions}
+
+The main experiment uses 6,000 paired paths for each of two currencies and four architectures: 48,000 architecture-path evaluations, each with 480 six-hour steps. With initial ceiling normalised to one, the principal binary outcomes are
+
+\begin{align}
+ B_{jap}&=\mathbf{1}\!\left\{\sum_{t,i}L_{i,t}>0.001\right\},
+ &G_{jap}&=\mathbf{1}\!\left\{\max_t b_t>0.10\right\},\\
+ P_{jap}&=\frac{1}{T}\sum_{t=1}^{T}\mathbf{1}\{\text{breaker active at }t\},
+ &S_{jap}^{(5)}&=\frac{1}{T}\sum_{t=1}^{T}\mathbf{1}\{b_t>0.05\}.
+ \label{eq:outcomes}
+\end{align}
+
+The oracle metric is mean absolute log-ratio error,
+$E_{jap}=T^{-1}\sum_t|\log(\widehat R_t/R_t)|$, and the upper tail is summarised by the pathwise maximum and its cross-path 95th percentile. Credit $Q$ is cumulative accepted draw in initial-ceiling units. An unnecessary liquidation is defined in Section~\ref{sec:model}; rates, ceilings, liquidation ratios, utilisation, and breaker classification are retained as mechanism diagnostics rather than only final outcomes. Event outcomes are reported as cross-path proportions and continuous outcomes as cross-path means or stated quantiles.
+
+\subsection{Robustness and mechanism-isolation exercises}
 
 Five robustness families supplement the main experiment:
 
@@ -289,29 +341,106 @@ Five robustness families supplement the main experiment:
   \item \textbf{Controller ablation:} rate-only, ceiling-only, liquidation-only, all controls, and all controls plus breaker.
 \end{enumerate}
 
-Sensitivity experiments use 1,200 paths per cell. They are large enough for a stable mechanism comparison at the reported precision but are not a substitute for parameter estimation. Code, seeds, raw inputs, checksums, generated CSVs, tables, figures, and tests are released together.
+Sensitivity experiments use 1,200 common paths per cell. Historical windows are deliberately treated as overlapping audit cases rather than independent observations. The attack exercise isolates source aggregation; the latency--basis grid separates timestamp delay from settlement-domain mismatch; the delay exercise holds the controller rule fixed while changing execution time; and the ablation holds data and thresholds fixed while enabling selected actuators. This one-channel-at-a-time structure supports mechanism attribution within the simulator, but it is not a substitute for parameter estimation or a live causal experiment.
 
 \subsection{Parameter-neighbourhood stability experiment}
 
 The fixed controller coefficients in Equations~\eqref{eq:risk-score}--\eqref{eq:targets}
 are collected in an eight-dimensional vector
 $\theta=(\beta,w_\sigma,w_b,w_\delta,w_u,g_r,g_C,g_\lambda)$.
-A deterministic 96-point Latin-hypercube pilot spans broad admissible bounds and
-selects a robust centre. A second 360-point Latin hypercube perturbs all eight
-coefficients simultaneously in a local neighbourhood around that centre.
+Here $\beta$ is the EWMA memory, the four $w$ coefficients weight observable
+risk signals, and the three $g$ coefficients control target sensitivity. The
+broad design box is reported in Table~\ref{tab:stability-parameters}. These are
+admissible engineering ranges, not confidence intervals.
 
-Each local vector is evaluated in two complementary layers. First, a reduced
-closed-loop model is started from nine perturbed initial states under calm,
-moderate, and crisis conditions, both without delay and with a 48-hour delay.
-Tail movement, tail range, terminal spread, contraction, and boundedness define
-the convergence label and continuous stability score. Second, the full economic
-simulator runs the vector on 192 common ARS and 192 common TRY paths. The stable
-point cloud is normalised in eight dimensions and analysed with a Vietoris--Rips
-filtration, persistent homology, and 30 matched Latin-hypercube null clouds.
-Figure~\ref{fig:stability-methodology} shows the complete input--calculation--output
-pipeline. Detailed numeric outputs are released separately so that this
-additional robustness exercise remains distinguishable from the 6,000-path main
-architecture comparison.
+\begin{table*}[t]
+\centering
+\caption{Controller parameters used in the stability experiment.}
+\label{tab:stability-parameters}
+\small
+\begin{tabular}{llll}
+\toprule
+Parameter & Baseline & Broad interval & Function \\
+\midrule
+$\beta$ & 0.92 & $[0.80,0.98]$ & EWMA persistence \\
+$w_\sigma$ & 4.00 & $[2.50,5.50]$ & volatility contribution \\
+$w_b$ & 3.20 & $[2.00,4.50]$ & DEX-basis contribution \\
+$w_\delta$ & 1.80 & $[1.00,2.80]$ & oracle-disagreement contribution \\
+$w_u$ & 0.90 & $[0.40,1.40]$ & excess-utilisation contribution \\
+$g_r$ & 0.90 & $[0.50,1.30]$ & borrowing-rate response \\
+$g_C$ & 1.75 & $[0.80,2.80]$ & debt-ceiling response \\
+$g_\lambda$ & 0.70 & $[0.35,1.10]$ & liquidation-ratio response \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+Latin-hypercube sampling is used because it stratifies every marginal range in
+a finite computer experiment \cite{McKay1979}. A deterministic 96-point broad
+pilot, including the published baseline, locates candidate robust configurations.
+The centre minimises the convergence score plus a small normalised-distance
+penalty from the published baseline. A second Latin hypercube samples exactly
+360 vectors in an axis-aligned local neighbourhood around that centre, clipped
+to the broad bounds. The procedure searches for a basin and then interrogates
+its neighbourhood; it does not claim that the selected centre is a globally
+optimal policy.
+
+For the reduced probe, the closed-loop state is
+
+\begin{equation}
+ z_t=(r_t,C_t,\lambda_t,D_t,b_t,v_t),
+ \qquad
+ v_{t+1}=\beta v_t+(1-\beta)q_t^2,
+ \label{eq:reduced-state}
+\end{equation}
+
+where $q_t=\Delta\log\widehat R_t$ and $\widehat\sigma_t=\sqrt{v_{t+1}}$.
+Debt demand falls with the rate and available ceiling, repayment reduces debt,
+accepted draws move the DEX basis, and the breaker can set new draws to zero.
+Each vector starts from nine perturbed initial states in calm, moderate, and
+crisis regimes, each evaluated with zero delay and with an eight-step (48-hour)
+control delay. For a case $c$, trajectories are normalised by state-specific
+domains. It is labelled converged only if it is finite and bounded and satisfies
+
+\begin{equation}
+ m_c<0.002,\qquad h_c<0.030,\qquad
+ d_c<0.040,\qquad d_c/d_{c,0}<0.50,
+ \label{eq:convergence-criteria}
+\end{equation}
+
+where $m_c$ is mean tail step norm, $h_c$ mean tail range, $d_c$ terminal
+ensemble spread, and $d_{c,0}$ initial ensemble spread. A parameter vector is
+\emph{robustly convergent} when all six cases are bounded, at least five of six
+converge, and the worst terminal spread is below 0.055. The continuous stability
+score preserves movement, range, spread, contraction, non-convergence, and
+unboundedness penalties so that near-threshold configurations are not treated as
+identical.
+
+The reduced probe is followed by an economic cross-check: every local vector is
+run on 192 common ARS paths and 192 common TRY paths, each containing 480
+six-hour steps. The local stage therefore evaluates 138,240 full four-month
+protocol paths. Economic safety is not inferred from convergence; bad debt,
+depeg, credit, rate, ceiling, liquidation, oracle, and pause outcomes are
+recomputed in the full model.
+
+Finally, robust vectors are scaled to the unit cube using the local sampling
+bounds. For filtration radius $\varepsilon$, a Vietoris--Rips complex connects
+points whose distance is at most $\varepsilon$. Persistent homology records
+$\beta_0(\varepsilon)$, the number of connected components, and the birth and
+death radii of one-dimensional cycles \cite{Carlsson2009,Otter2017}. To avoid
+interpreting sparse eight-dimensional geometry as structure, the maximum
+$H_1$ persistence is compared with $B=30$ matched Latin-hypercube null clouds:
+
+\begin{equation}
+ p_{H_1}=\frac{1+\sum_{b=1}^{B}
+ \mathbf{1}\{M_b^{\mathrm{null}}\geq M^{\mathrm{obs}}\}}{B+1}.
+ \label{eq:topology-null}
+\end{equation}
+
+This layer asks whether the sampled stable set is locally connected and whether
+an apparent hole exceeds finite-sampling structure. It cannot establish global
+connectedness or replace a Lyapunov or Lyapunov--Krasovskii proof. Figure~\ref{fig:stability-methodology}
+shows the complete input--calculation--output pipeline. Detailed numeric outputs
+remain separate from the 6,000-path main architecture comparison.
 
 \begin{figure*}[t]
 \centering
@@ -323,6 +452,23 @@ evaluated through a reduced closed-loop convergence probe and the full economic
 simulator before convergence, economic, and topological outputs are reported.}
 \label{fig:stability-methodology}
 \end{figure*}
+
+\subsection{Reproducibility, numerical checks, and deployment boundary}
+
+The main simulation uses seed 20260810 and the stability experiment uses seed
+20261105, with documented offsets by currency and exercise. Raw source files,
+processed panels, SHA-256 checksums, parameter bounds, generated CSV files,
+tables, figures, and the commands that rebuild them are versioned together.
+Automated checks require exact reconstruction of every monthly endpoint after
+six-hour disaggregation, deterministic block sampling, complete 39-window
+historical replay, finite accounting variables, controller-domain compliance,
+one-source median resistance, and the expected breaker comparative statics.
+
+The code is an off-chain simulation and shadow-validation package. It does not
+submit transactions, hold a signer, or grant the controller authority over a
+deployed protocol. Reproduction demonstrates that the reported counterfactual
+is internally executable; it does not constitute a smart-contract audit,
+testnet deployment, or production safety certification.
 
 \section{Results}\label{sec:results}
 
@@ -532,6 +678,12 @@ Attacking the DeFi ecosystem with flash loans for fun and profit.
 In: \textit{Financial Cryptography and Data Security}. 2021. pp. 3--32.
 doi:10.1007/978-3-662-64322-8\_1.
 
+\bibitem{QinLiquidations2021}
+Qin K, Zhou L, Gamito P, Jovanovic P, Gervais A.
+An empirical study of DeFi liquidations: Incentives, risks, and instabilities.
+In: \textit{Proceedings of the 21st ACM Internet Measurement Conference}. 2021. pp. 336--350.
+doi:10.1145/3487552.3487811.
+
 \bibitem{Bai2025}
 Bai D, Cao J, Cao Y, Wen L.
 Ormer: A manipulation-resistant and gas-efficient blockchain pricing oracle for DeFi.
@@ -646,6 +798,24 @@ K\"unsch HR.
 The jackknife and the bootstrap for general stationary observations.
 \textit{The Annals of Statistics}. 1989;17(3):1217--1241.
 doi:10.1214/aos/1176347265.
+
+\bibitem{McKay1979}
+McKay MD, Beckman RJ, Conover WJ.
+Comparison of three methods for selecting values of input variables in the analysis of output from a computer code.
+\textit{Technometrics}. 1979;21(2):239--245.
+doi:10.1080/00401706.1979.10489755.
+
+\bibitem{Carlsson2009}
+Carlsson G.
+Topology and data.
+\textit{Bulletin of the American Mathematical Society}. 2009;46(2):255--308.
+doi:10.1090/S0273-0979-09-01249-X.
+
+\bibitem{Otter2017}
+Otter N, Porter MA, Tillmann U, Grindrod P, Harrington HA.
+A roadmap for the computation of persistent homology.
+\textit{EPJ Data Science}. 2017;6:17.
+doi:10.1140/epjds/s13688-017-0109-5.
 
 \end{thebibliography}
 
